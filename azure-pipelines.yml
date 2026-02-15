@@ -78,9 +78,9 @@ stages:
       vmImage: ubuntu-latest
     environment: Dev
     strategy:
-     runOnce:
-       deploy:
-         steps:
+      runOnce:
+        deploy:
+          steps:
             - task: AzureCLI@2
               inputs:
                 azureSubscription: 'WebAppWithDatabaseDemo_spn'
@@ -88,18 +88,25 @@ stages:
                 scriptLocation: 'inlineScript'
                 inlineScript: |
                   # Create a resource group
-                        az group create --location eastus2 --name $(rg)
-                                                      
-                        # Create an app service plan of type Linux
-                        az appservice plan create -g $(rg) -n myapp-service-plan --is-linux
-                                                      
-                        # Create an App Service from the plan with Java SE as the runtime 
-                        # Make sure to have --runtime "JAVA|8-jre8"
-                        az webapp create -g $(rg) -p myapp-service-plan -n devopsmela-prod7865 --runtime "JAVA|8-jre8"
-            
+                  az group create --location eastus2 --name $(rg)
+
+                  # Create an app service plan of type Linux (B1 quota)
+                  if ! az appservice plan show -g $(rg) -n myapp-service-plan >/dev/null 2>&1; then
+                    az appservice plan create -g $(rg) -n myapp-service-plan --is-linux --sku B1
+                  else
+                    echo "App Service plan myapp-service-plan already exists."
+                  fi
+
+                  # Create an App Service from the plan with Java SE as the runtime
+                  if ! az webapp show -g $(rg) -n devopsmela-prod7865 >/dev/null 2>&1; then
+                    az webapp create -g $(rg) -p myapp-service-plan -n devopsmela-prod7865 --runtime "JAVA|8-jre8"
+                  else
+                    echo "Web App devopsmela-prod7865 already exists."
+                  fi
+
             - task: AzureWebApp@1
               inputs:
-                azureSubscription: 'WebAppWithDatabaseDemo_spn' # Add you own service conection details
+                azureSubscription: 'WebAppWithDatabaseDemo_spn'
                 appType: 'webAppLinux'
                 appName: 'devopsmela-prod7865'
                 package: '$(Pipeline.Workspace)/**/*.jar'
