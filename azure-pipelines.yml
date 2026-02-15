@@ -83,7 +83,7 @@ stages:
          steps:
             - task: AzureCLI@2
               inputs:
-                azureSubscription: 'azdevsecops10-Udemy01' # Add you own service conection details
+                azureSubscription: 'WebAppWithDatabaseDemo_spn'
                 scriptType: 'bash'
                 scriptLocation: 'inlineScript'
                 inlineScript: |
@@ -99,7 +99,7 @@ stages:
             
             - task: AzureWebApp@1
               inputs:
-                azureSubscription: 'azdevsecops10-Udemy01' # Add you own service conection details
+                azureSubscription: 'WebAppWithDatabaseDemo_spn' # Add you own service conection details
                 appType: 'webAppLinux'
                 appName: 'devopsmela-prod7865'
                 package: '$(Pipeline.Workspace)/**/*.jar'
